@@ -1,38 +1,97 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>موقعي الجميل مع شات بوت</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+  #chat-window {
+    height: 300px;
+    overflow-y: auto;
+    background: #f9f9f9;
+    padding: 10px;
+    border: 1px solid #ddd;
+    white-space: pre-wrap;
+    font-family: Arial, sans-serif;
+  }
+</style>
+</head>
+<body class="bg-gray-50 text-gray-800 font-sans">
+
+<header class="bg-blue-600 text-white p-6 text-center">
+  <h1 class="text-3xl font-bold">مرحبا بكم في موقعي</h1>
+  <p class="mt-2 text-blue-200">تصميم جميل وسريع الاستجابة</p>
+</header>
+
+<main class="max-w-4xl mx-auto p-6">
+  <section class="my-8">
+    <h2 class="text-2xl font-semibold mb-4">عن الموقع</h2>
+    <p>هذا مثال لموقع أنيق باستخدام Tailwind CSS، سهل التخصيص ويدعم العربية.</p>
+  </section>
+
+  <section class="my-8">
+    <h2 class="text-2xl font-semibold mb-4">خدماتنا</h2>
+    <ul class="list-disc list-inside space-y-2">
+      <li>تصميم واجهات عصرية</li>
+      <li>تطوير مواقع متجاوبة</li>
+      <li>تحسين تجربة المستخدم</li>
+    </ul>
+  </section>
+
+  <section class="my-8 max-w-md mx-auto">
+    <h2 class="text-2xl font-semibold mb-4 text-center">شات بوت AI</h2>
+    <textarea id="user-input" rows="3" class="w-full p-2 border rounded" placeholder="اكتب رسالتك هنا..."></textarea>
+    <button id="send-btn" class="mt-2 w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 transition">إرسال</button>
+    <pre id="chat-window" class="mt-4"></pre>
+  </section>
+</main>
+
+<footer class="bg-gray-200 text-center p-4 mt-12">
+  <p>© 2025 Schneider. جميع الحقوق محفوظة.</p>
+</footer>
+
 <script>
-  async function sendMessage() {
-    const prompt = document.getElementById("user-input").value.trim();
-    if (!prompt) return;
+const input = document.getElementById("user-input");
+const button = document.getElementById("send-btn");
+const chatWindow = document.getElementById("chat-window");
 
-    appendToChat(`أنت: ${prompt}`);
+function appendToChat(text) {
+  chatWindow.textContent += text + "\n";
+  chatWindow.scrollTop = chatWindow.scrollHeight;
+}
 
-    try {
-      const response = await fetch("https://your-render-url.onrender.com/chat", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({ prompt })
-      });
+async function sendMessage() {
+  const prompt = input.value.trim();
+  if (!prompt) return;
 
-      const data = await response.json();
+  appendToChat(`أنت: ${prompt}`);
+  input.value = "";
 
-      if (data.error) {
-        appendToChat(`البوت: خطأ - ${data.error}`);
-      } else {
-        // حسب صيغة رد Hugging Face
-        const botReply = data[0]?.generated_text || "لا يوجد رد";
-        appendToChat(`البوت: ${botReply}`);
-      }
-    } catch {
-      appendToChat("البوت: حدث خطأ في الاتصال بالسيرفر.");
+  try {
+    // عدّل الرابط حسب سيرفرك، لا تضع localhost إذا نشرت في Render أو غيره
+    const response = await fetch("https://schneider-3ebh.onrender.com", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ prompt })
+    });
+
+    const data = await response.json();
+
+    if (data.error) {
+      appendToChat(`البوت: خطأ - ${data.error}`);
+    } else {
+      // حسب صيغة الرد من API
+      const botReply = data[0]?.generated_text || "لا يوجد رد";
+      appendToChat(`البوت: ${botReply}`);
     }
+  } catch {
+    appendToChat("البوت: حدث خطأ في الاتصال بالسيرفر.");
   }
+}
 
-  function appendToChat(text) {
-    const chatWindow = document.getElementById("chat-window");
-    chatWindow.textContent += text + "\n";
-    chatWindow.scrollTop = chatWindow.scrollHeight;
-  }
-
-  document.getElementById("send-btn").onclick = sendMessage;
+button.onclick = sendMessage;
 </script>
+
+</body>
+</html>
