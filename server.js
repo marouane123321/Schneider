@@ -1,13 +1,15 @@
-// server.js
 import express from "express";
 import cors from "cors";
 import fetch from "node-fetch";
+import dotenv from "dotenv";
+
+dotenv.config();
 
 const app = express();
 app.use(cors());
 app.use(express.json());
 
-const API_TOKEN = "hf_YOUR_SECURE_API_TOKEN";
+const API_TOKEN = process.env.HUGGINGFACE_API_TOKEN;
 const MODEL = "gpt2";
 
 app.post("/chat", async (req, res) => {
@@ -31,4 +33,5 @@ app.post("/chat", async (req, res) => {
   }
 });
 
-app.listen(3000, () => console.log("السيرفر يعمل على http://localhost:3000"));
+const port = process.env.PORT || 3000;
+app.listen(port, () => console.log(`السيرفر يعمل على http://localhost:${port}`));
