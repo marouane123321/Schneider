@@ -3,8 +3,19 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>موقعي الجميل</title>
+<title>موقعي الجميل مع شات بوت</title>
 <script src="https://cdn.tailwindcss.com"></script>
+<style>
+  #chat-window {
+    height: 300px;
+    overflow-y: auto;
+    background: #f9f9f9;
+    padding: 10px;
+    border: 1px solid #ddd;
+    white-space: pre-wrap;
+    font-family: Arial, sans-serif;
+  }
+</style>
 </head>
 <body class="bg-gray-50 text-gray-800 font-sans">
 
@@ -27,11 +38,58 @@
       <li>تحسين تجربة المستخدم</li>
     </ul>
   </section>
+
+  <section class="my-8 max-w-md mx-auto">
+    <h2 class="text-2xl font-semibold mb-4 text-center">شات بوت AI</h2>
+    <textarea id="user-input" rows="3" class="w-full p-2 border rounded" placeholder="اكتب رسالتك هنا..."></textarea>
+    <button id="send-btn" class="mt-2 w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 transition">إرسال</button>
+    <pre id="chat-window" class="mt-4"></pre>
+  </section>
 </main>
 
 <footer class="bg-gray-200 text-center p-4 mt-12">
   <p>© 2025 Schneider. جميع الحقوق محفوظة.</p>
 </footer>
+
+<script>
+const API_TOKEN = "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";
+const MODEL = "gpt2";
+
+const input = document.getElementById("user-input");
+const button = document.getElementById("send-btn");
+const chatWindow = document.getElementById("chat-window");
+
+button.onclick = async () => {
+  const prompt = input.value.trim();
+  if (!prompt) return;
+
+  chatWindow.textContent += `أنت: ${prompt}\n`;
+  input.value = "";
+
+  try {
+    const response = await fetch(`https://api-inference.huggingface.co/models/${MODEL}`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${API_TOKEN}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ inputs: prompt })
+    });
+
+    const data = await response.json();
+
+    if (data.error) {
+      chatWindow.textContent += `البوت: خطأ - ${data.error}\n`;
+      return;
+    }
+
+    const botReply = data[0]?.generated_text || "لا يوجد رد";
+    chatWindow.textContent += `البوت: ${botReply}\n`;
+  } catch (err) {
+    chatWindow.textContent += `البوت: حدث خطأ في الاتصال.\n`;
+  }
+};
+</script>
 
 </body>
 </html>
