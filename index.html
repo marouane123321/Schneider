@@ -1,97 +1,180 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ar" dir="rtl">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>موقعي الجميل مع شات بوت</title>
-<script src="https://cdn.tailwindcss.com"></script>
-<style>
-  #chat-window {
-    height: 300px;
-    overflow-y: auto;
-    background: #f9f9f9;
-    padding: 10px;
-    border: 1px solid #ddd;
-    white-space: pre-wrap;
-    font-family: Arial, sans-serif;
-  }
-</style>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>عرض مشروع — قالب شبيه itch.io</title>
+  <style>
+    :root{--accent:#ff5a5f;--bg:#0f1720;--card:#0b1220;--muted:#9aa4b2}
+    html,body{height:100%;margin:0;font-family:Inter,Segoe UI,system-ui,Arial;background:linear-gradient(180deg,#071021 0%, #071827 100%);color:#e6eef6}
+    .container{max-width:1100px;margin:28px auto;padding:18px}
+    .header{display:flex;gap:16px;align-items:center}
+    .cover{width:220px;height:120px;border-radius:8px;object-fit:cover;background:#18222b}
+    .meta{flex:1}
+    h1{margin:0 0 6px 0;font-size:22px}
+    .sub{color:var(--muted);font-size:13px;margin-bottom:10px}
+    .actions{display:flex;gap:10px;align-items:center}
+    .btn{background:var(--accent);border:none;padding:10px 14px;border-radius:8px;color:white;cursor:pointer;font-weight:600}
+    .btn.secondary{background:transparent;border:1px solid rgba(255,255,255,0.06);color:var(--muted)}
+    .main{display:grid;grid-template-columns:1fr 340px;gap:18px;margin-top:18px}
+    .card{background:linear-gradient(180deg,rgba(255,255,255,0.02),rgba(255,255,255,0.01));padding:14px;border-radius:10px}
+    .desc{line-height:1.5;color:#dce8f2}
+    .gallery{display:flex;gap:10px;margin-top:12px;flex-wrap:wrap}
+    .thumb{width:calc(50% - 5px);height:110px;object-fit:cover;border-radius:6px;cursor:pointer}
+    .side .info-row{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px dashed rgba(255,255,255,0.03)}
+    .tags{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+    .tag{background:rgba(255,255,255,0.03);padding:6px 8px;border-radius:999px;font-size:13px;color:var(--muted)}
+    .download-box{display:flex;flex-direction:column;gap:8px;align-items:stretch}
+    .rar-file{background:#0b1620;padding:12px;border-radius:8px;display:flex;justify-content:space-between;align-items:center}
+    .rar-file .name{font-weight:600}
+    .uploader{display:flex;gap:8px;align-items:center}
+    .avatar{width:44px;height:44px;border-radius:10px;object-fit:cover}
+    /* lightbox */
+    .lightbox{position:fixed;inset:0;background:rgba(3,6,10,0.85);display:none;align-items:center;justify-content:center;padding:20px}
+    .lightbox img{max-width:95%;max-height:90%;border-radius:8px}
+    .footer{color:var(--muted);font-size:13px;margin-top:12px}
+    @media (max-width:900px){.main{grid-template-columns:1fr}.cover{display:none}}
+  </style>
 </head>
-<body class="bg-gray-50 text-gray-800 font-sans">
+<body>
+  <div class="container">
+    <div class="header">
+      <img class="cover" src="cover.jpg" alt="غلاف المشروع" onerror="this.style.background='#24303a'">
+      <div class="meta">
+        <h1 id="title">اسم المشروع</h1>
+        <div class="sub">نوع المشروع · لعبة · أندرويد · ويندوز</div>
+        <div class="actions">
+          <button class="btn" id="downloadBtn">تحميل (RAR)</button>
+          <button class="btn secondary" id="visitBtn">عرض صفحة المشروع</button>
+        </div>
+      </div>
+    </div>
 
-<header class="bg-blue-600 text-white p-6 text-center">
-  <h1 class="text-3xl font-bold">مرحبا بكم في موقعي</h1>
-  <p class="mt-2 text-blue-200">تصميم جميل وسريع الاستجابة</p>
-</header>
+    <div class="main">
+      <div>
+        <div class="card">
+          <div class="desc" id="description">
+            وصف مختصر للمشروع. ضع هنا معلومات عن المحتوى، متطلبات التشغيل، وكيفية التثبيت. مثال: قم بفك الضغط ثم شغل الملف exe أو apk.
+          </div>
+          <div class="gallery" id="gallery">
+            <img src="shot1.jpg" alt="لقطة 1" class="thumb">
+            <img src="shot2.jpg" alt="لقطة 2" class="thumb">
+            <img src="shot3.jpg" alt="لقطة 3" class="thumb">
+            <img src="shot4.jpg" alt="لقطة 4" class="thumb">
+          </div>
+          <div class="footer">ملاحظة: ضع ملفات RAR ولقطات الشاشة داخل نفس مجلد الاستضافة أو قم بتعديل الروابط.</div>
+        </div>
 
-<main class="max-w-4xl mx-auto p-6">
-  <section class="my-8">
-    <h2 class="text-2xl font-semibold mb-4">عن الموقع</h2>
-    <p>هذا مثال لموقع أنيق باستخدام Tailwind CSS، سهل التخصيص ويدعم العربية.</p>
-  </section>
+        <div class="card" style="margin-top:12px">
+          <h3 style="margin:0 0 8px 0">تفاصيل الإصدار</h3>
+          <div style="display:flex;gap:12px;flex-wrap:wrap">
+            <div class="tag">الإصدار: 1.0</div>
+            <div class="tag">حجم الملف: 45MB</div>
+            <div class="tag">تاريخ الإصدار: 2025-08-09</div>
+          </div>
+        </div>
+      </div>
 
-  <section class="my-8">
-    <h2 class="text-2xl font-semibold mb-4">خدماتنا</h2>
-    <ul class="list-disc list-inside space-y-2">
-      <li>تصميم واجهات عصرية</li>
-      <li>تطوير مواقع متجاوبة</li>
-      <li>تحسين تجربة المستخدم</li>
-    </ul>
-  </section>
+      <aside class="side">
+        <div class="card">
+          <div style="display:flex;gap:10px;align-items:center">
+            <img class="avatar" src="avatar.jpg" alt="الرافع" onerror="this.style.background='#162027'">
+            <div style="flex:1">
+              <div style="font-weight:700">اسم الناشر</div>
+              <div style="color:var(--muted);font-size:13px">@username</div>
+            </div>
+          </div>
 
-  <section class="my-8 max-w-md mx-auto">
-    <h2 class="text-2xl font-semibold mb-4 text-center">شات بوت AI</h2>
-    <textarea id="user-input" rows="3" class="w-full p-2 border rounded" placeholder="اكتب رسالتك هنا..."></textarea>
-    <button id="send-btn" class="mt-2 w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 transition">إرسال</button>
-    <pre id="chat-window" class="mt-4"></pre>
-  </section>
-</main>
+          <div class="info-row">
+            <div>التقييم</div>
+            <div>4.6 / 5</div>
+          </div>
+          <div class="info-row">
+            <div>المشاهدات</div>
+            <div id="views">1,234</div>
+          </div>
 
-<footer class="bg-gray-200 text-center p-4 mt-12">
-  <p>© 2025 Schneider. جميع الحقوق محفوظة.</p>
-</footer>
+          <div style="margin-top:10px">
+            <div style="font-size:13px;color:var(--muted)">الوسوم</div>
+            <div class="tags">
+              <div class="tag">3D</div>
+              <div class="tag">Godot</div>
+              <div class="tag">تصويب</div>
+            </div>
+          </div>
 
-<script>
-const input = document.getElementById("user-input");
-const button = document.getElementById("send-btn");
-const chatWindow = document.getElementById("chat-window");
+          <div style="margin-top:12px" class="download-box">
+            <div class="rar-file">
+              <div>
+                <div class="name" id="fileName">project.rar</div>
+                <div class="sub" style="margin-top:4px">اضغط تحميل لتنزيل ملف RAR</div>
+              </div>
+              <div><button class="btn" id="dl2">تحميل</button></div>
+            </div>
+            <div style="font-size:13px;color:var(--muted);margin-top:8px">حجم الملف والتوافق يظهران هنا.</div>
+          </div>
+        </div>
 
-function appendToChat(text) {
-  chatWindow.textContent += text + "\n";
-  chatWindow.scrollTop = chatWindow.scrollHeight;
-}
+        <div class="card" style="margin-top:12px">
+          <h4 style="margin:0 0 6px 0">متطلبات</h4>
+          <ul style="margin:0;padding-left:18px;color:var(--muted)">
+            <li>ويندوز 10+</li>
+            <li>CPU: 4 نوى</li>
+            <li>ذاكرة 8GB</li>
+          </ul>
+        </div>
+      </aside>
+    </div>
+  </div>
 
-async function sendMessage() {
-  const prompt = input.value.trim();
-  if (!prompt) return;
+  <div class="lightbox" id="lightbox">
+    <img src="" alt="" id="lightboxImg">
+  </div>
 
-  appendToChat(`أنت: ${prompt}`);
-  input.value = "";
-
-  try {
-    // عدّل الرابط حسب سيرفرك، لا تضع localhost إذا نشرت في Render أو غيره
-    const response = await fetch("https://schneider-3ebh.onrender.com", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ prompt })
-    });
-
-    const data = await response.json();
-
-    if (data.error) {
-      appendToChat(`البوت: خطأ - ${data.error}`);
-    } else {
-      // حسب صيغة الرد من API
-      const botReply = data[0]?.generated_text || "لا يوجد رد";
-      appendToChat(`البوت: ${botReply}`);
+  <script>
+    // إعدادات سريعة: عدّل هذه المتغيرات إلى روابطك وبياناتك
+    const config = {
+      title: 'مشروعي التجريبي',
+      description: `لعبة تجريبية مبنية بـ Godot. لفك الضغط افتح project.rar ثم شغّل الملف داخل مجلد dist. تتضمن مراحل، AI، وأنيميشنات.`,
+      cover: 'cover.jpg',
+      avatar: 'avatar.jpg',
+      rarLink: 'project.rar', // استبدل بالرابط المباشر لملف RAR على سيرفرك
+      screenshots: ['shot1.jpg','shot2.jpg','shot3.jpg','shot4.jpg']
     }
-  } catch {
-    appendToChat("البوت: حدث خطأ في الاتصال بالسيرفر.");
-  }
-}
 
-button.onclick = sendMessage;
-</script>
+    // تطبيق الإعدادات
+    document.getElementById('title').innerText = config.title
+    document.getElementById('description').innerText = config.description
+    document.querySelector('.cover').src = config.cover
+    document.querySelector('.avatar').src = config.avatar
+    document.getElementById('fileName').innerText = config.rarLink
 
+    // أزرار التحميل
+    document.getElementById('downloadBtn').addEventListener('click', ()=> window.location.href = config.rarLink)
+    document.getElementById('dl2').addEventListener('click', ()=> window.location.href = config.rarLink)
+
+    // صفحة المشروع (يمكن توجيه لصفحة مفصلة أو itch.io)
+    document.getElementById('visitBtn').addEventListener('click', ()=> window.open('#','_blank'))
+
+    // جاليري
+    const gallery = document.getElementById('gallery')
+    gallery.innerHTML = ''
+    config.screenshots.forEach(src=>{
+      const img = document.createElement('img')
+      img.className = 'thumb'
+      img.src = src
+      img.alt = 'لقطة'
+      img.addEventListener('click', ()=> openLightbox(src))
+      gallery.appendChild(img)
+    })
+
+    const lightbox = document.getElementById('lightbox')
+    const lbImg = document.getElementById('lightboxImg')
+    function openLightbox(src){ lbImg.src = src; lightbox.style.display='flex' }
+    lightbox.addEventListener('click', ()=> lightbox.style.display='none')
+
+    // ملاحظات استضافة: يمكنك رفع project.rar ولقطات الشاشة إلى نفس المجلد
+    // أو استبدال config.rarLink بروابط مباشرة لخدمات تخزين سحابي.
+  </script>
 </body>
 </html>
