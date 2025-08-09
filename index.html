@@ -5,35 +5,36 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>عرض مشروع — قالب شبيه itch.io</title>
   <style>
-    :root{--accent:#ff5a5f;--bg:#0f1720;--card:#0b1220;--muted:#9aa4b2}
+    :root{--accent:#ff5a5f;--bg:#0f1720;--card:#0b1220;--muted:#9aa4b2;--hover:#ff767a}
     html,body{height:100%;margin:0;font-family:Inter,Segoe UI,system-ui,Arial;background:linear-gradient(180deg,#071021 0%, #071827 100%);color:#e6eef6}
+    a{text-decoration:none;color:inherit}
     .container{max-width:1100px;margin:28px auto;padding:18px}
-    .header{display:flex;gap:16px;align-items:center}
-    .cover{width:220px;height:120px;border-radius:8px;object-fit:cover;background:#18222b}
-    .meta{flex:1}
-    h1{margin:0 0 6px 0;font-size:22px}
-    .sub{color:var(--muted);font-size:13px;margin-bottom:10px}
-    .actions{display:flex;gap:10px;align-items:center}
-    .btn{background:var(--accent);border:none;padding:10px 14px;border-radius:8px;color:white;cursor:pointer;font-weight:600}
-    .btn.secondary{background:transparent;border:1px solid rgba(255,255,255,0.06);color:var(--muted)}
+    .header{display:flex;gap:16px;align-items:center;flex-wrap:wrap}
+    .cover{width:240px;height:135px;border-radius:8px;object-fit:cover;background:#18222b;flex-shrink:0}
+    .meta{flex:1;min-width:250px}
+    h1{margin:0 0 6px 0;font-size:26px}
+    .sub{color:var(--muted);font-size:14px;margin-bottom:12px}
+    .actions{display:flex;gap:10px;flex-wrap:wrap}
+    .btn{background:var(--accent);border:none;padding:10px 16px;border-radius:8px;color:white;cursor:pointer;font-weight:600;transition:background .2s}
+    .btn:hover{background:var(--hover)}
+    .btn.secondary{background:transparent;border:1px solid rgba(255,255,255,0.1);color:var(--muted)}
     .main{display:grid;grid-template-columns:1fr 340px;gap:18px;margin-top:18px}
-    .card{background:linear-gradient(180deg,rgba(255,255,255,0.02),rgba(255,255,255,0.01));padding:14px;border-radius:10px}
-    .desc{line-height:1.5;color:#dce8f2}
+    .card{background:rgba(255,255,255,0.02);padding:16px;border-radius:10px;box-shadow:0 2px 8px rgba(0,0,0,0.25)}
+    .desc{line-height:1.6;color:#dce8f2;font-size:15px}
     .gallery{display:flex;gap:10px;margin-top:12px;flex-wrap:wrap}
-    .thumb{width:calc(50% - 5px);height:110px;object-fit:cover;border-radius:6px;cursor:pointer}
-    .side .info-row{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px dashed rgba(255,255,255,0.03)}
+    .thumb{width:calc(50% - 5px);height:120px;object-fit:cover;border-radius:6px;cursor:pointer;transition:transform .2s}
+    .thumb:hover{transform:scale(1.03)}
+    .side .info-row{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px dashed rgba(255,255,255,0.05)}
     .tags{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
-    .tag{background:rgba(255,255,255,0.03);padding:6px 8px;border-radius:999px;font-size:13px;color:var(--muted)}
+    .tag{background:rgba(255,255,255,0.05);padding:6px 8px;border-radius:999px;font-size:13px;color:var(--muted)}
     .download-box{display:flex;flex-direction:column;gap:8px;align-items:stretch}
     .rar-file{background:#0b1620;padding:12px;border-radius:8px;display:flex;justify-content:space-between;align-items:center}
     .rar-file .name{font-weight:600}
-    .uploader{display:flex;gap:8px;align-items:center}
     .avatar{width:44px;height:44px;border-radius:10px;object-fit:cover}
-    /* lightbox */
-    .lightbox{position:fixed;inset:0;background:rgba(3,6,10,0.85);display:none;align-items:center;justify-content:center;padding:20px}
-    .lightbox img{max-width:95%;max-height:90%;border-radius:8px}
+    .lightbox{position:fixed;inset:0;background:rgba(3,6,10,0.85);display:none;align-items:center;justify-content:center;padding:20px;z-index:1000}
+    .lightbox img{max-width:95%;max-height:90%;border-radius:8px;box-shadow:0 2px 12px rgba(0,0,0,0.6)}
     .footer{color:var(--muted);font-size:13px;margin-top:12px}
-    @media (max-width:900px){.main{grid-template-columns:1fr}.cover{display:none}}
+    @media (max-width:900px){.main{grid-template-columns:1fr}.cover{width:100%;height:auto}}
   </style>
 </head>
 <body>
@@ -53,15 +54,8 @@
     <div class="main">
       <div>
         <div class="card">
-          <div class="desc" id="description">
-            وصف مختصر للمشروع. ضع هنا معلومات عن المحتوى، متطلبات التشغيل، وكيفية التثبيت. مثال: قم بفك الضغط ثم شغل الملف exe أو apk.
-          </div>
-          <div class="gallery" id="gallery">
-            <img src="shot1.jpg" alt="لقطة 1" class="thumb">
-            <img src="shot2.jpg" alt="لقطة 2" class="thumb">
-            <img src="shot3.jpg" alt="لقطة 3" class="thumb">
-            <img src="shot4.jpg" alt="لقطة 4" class="thumb">
-          </div>
+          <div class="desc" id="description">وصف مختصر للمشروع. ضع هنا معلومات عن المحتوى، متطلبات التشغيل، وكيفية التثبيت.</div>
+          <div class="gallery" id="gallery"></div>
           <div class="footer">ملاحظة: ضع ملفات RAR ولقطات الشاشة داخل نفس مجلد الاستضافة أو قم بتعديل الروابط.</div>
         </div>
 
@@ -85,22 +79,12 @@
             </div>
           </div>
 
-          <div class="info-row">
-            <div>التقييم</div>
-            <div>4.6 / 5</div>
-          </div>
-          <div class="info-row">
-            <div>المشاهدات</div>
-            <div id="views">1,234</div>
-          </div>
+          <div class="info-row"><div>التقييم</div><div>4.6 / 5</div></div>
+          <div class="info-row"><div>المشاهدات</div><div id="views">1,234</div></div>
 
           <div style="margin-top:10px">
             <div style="font-size:13px;color:var(--muted)">الوسوم</div>
-            <div class="tags">
-              <div class="tag">3D</div>
-              <div class="tag">Godot</div>
-              <div class="tag">تصويب</div>
-            </div>
+            <div class="tags"><div class="tag">3D</div><div class="tag">Godot</div><div class="tag">تصويب</div></div>
           </div>
 
           <div style="margin-top:12px" class="download-box">
@@ -111,70 +95,49 @@
               </div>
               <div><button class="btn" id="dl2">تحميل</button></div>
             </div>
-            <div style="font-size:13px;color:var(--muted);margin-top:8px">حجم الملف والتوافق يظهران هنا.</div>
           </div>
         </div>
 
         <div class="card" style="margin-top:12px">
           <h4 style="margin:0 0 6px 0">متطلبات</h4>
-          <ul style="margin:0;padding-left:18px;color:var(--muted)">
-            <li>ويندوز 10+</li>
-            <li>CPU: 4 نوى</li>
-            <li>ذاكرة 8GB</li>
-          </ul>
+          <ul style="margin:0;padding-left:18px;color:var(--muted)"><li>ويندوز 10+</li><li>CPU: 4 نوى</li><li>ذاكرة 8GB</li></ul>
         </div>
       </aside>
     </div>
   </div>
 
-  <div class="lightbox" id="lightbox">
-    <img src="" alt="" id="lightboxImg">
-  </div>
+  <div class="lightbox" id="lightbox"><img src="" alt="" id="lightboxImg"></div>
 
   <script>
-    // إعدادات سريعة: عدّل هذه المتغيرات إلى روابطك وبياناتك
     const config = {
       title: 'مشروعي التجريبي',
-      description: `لعبة تجريبية مبنية بـ Godot. لفك الضغط افتح project.rar ثم شغّل الملف داخل مجلد dist. تتضمن مراحل، AI، وأنيميشنات.`,
+      description: 'لعبة تجريبية مبنية بـ Godot. لفك الضغط افتح project.rar ثم شغّل الملف داخل مجلد dist.',
       cover: 'cover.jpg',
       avatar: 'avatar.jpg',
-      rarLink: 'project.rar', // استبدل بالرابط المباشر لملف RAR على سيرفرك
+      rarLink: 'project.rar',
       screenshots: ['shot1.jpg','shot2.jpg','shot3.jpg','shot4.jpg']
     }
-
-    // تطبيق الإعدادات
     document.getElementById('title').innerText = config.title
     document.getElementById('description').innerText = config.description
     document.querySelector('.cover').src = config.cover
     document.querySelector('.avatar').src = config.avatar
     document.getElementById('fileName').innerText = config.rarLink
-
-    // أزرار التحميل
-    document.getElementById('downloadBtn').addEventListener('click', ()=> window.location.href = config.rarLink)
-    document.getElementById('dl2').addEventListener('click', ()=> window.location.href = config.rarLink)
-
-    // صفحة المشروع (يمكن توجيه لصفحة مفصلة أو itch.io)
-    document.getElementById('visitBtn').addEventListener('click', ()=> window.open('#','_blank'))
-
-    // جاليري
+    document.getElementById('downloadBtn').onclick = () => window.location.href = config.rarLink
+    document.getElementById('dl2').onclick = () => window.location.href = config.rarLink
+    document.getElementById('visitBtn').onclick = () => window.open('#','_blank')
     const gallery = document.getElementById('gallery')
-    gallery.innerHTML = ''
     config.screenshots.forEach(src=>{
       const img = document.createElement('img')
       img.className = 'thumb'
       img.src = src
       img.alt = 'لقطة'
-      img.addEventListener('click', ()=> openLightbox(src))
+      img.onclick = ()=> openLightbox(src)
       gallery.appendChild(img)
     })
-
     const lightbox = document.getElementById('lightbox')
     const lbImg = document.getElementById('lightboxImg')
     function openLightbox(src){ lbImg.src = src; lightbox.style.display='flex' }
-    lightbox.addEventListener('click', ()=> lightbox.style.display='none')
-
-    // ملاحظات استضافة: يمكنك رفع project.rar ولقطات الشاشة إلى نفس المجلد
-    // أو استبدال config.rarLink بروابط مباشرة لخدمات تخزين سحابي.
+    lightbox.onclick = ()=> lightbox.style.display='none'
   </script>
 </body>
 </html>
