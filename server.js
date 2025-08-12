@@ -21,6 +21,25 @@ db.run(`CREATE TABLE IF NOT EXISTS requests (
   status TEXT NOT NULL DEFAULT 'قيد الانتظار'
 )`);
 
+// بيانات موظفين مؤقتة (username و password)
+const users = [
+  { username: 'admin', password: 'admin123' },
+  { username: 'user1', password: 'password1' }
+];
+
+// تسجيل الدخول
+app.post('/login', (req, res) => {
+  const { username, password } = req.body;
+  const user = users.find(u => u.username === username && u.password === password);
+  if (user) {
+    // ترجع بيانات مبسطة (في نظام حقيقي تستخدم JWT أو جلسات)
+    res.json({ success: true, username: user.username });
+  } else {
+    res.status(401).json({ success: false, message: 'اسم المستخدم أو كلمة المرور خاطئة' });
+  }
+});
+
+// إضافة طلب جديد (نفس السابق)
 app.post('/requests', (req, res) => {
   const { fullName, requestType, details } = req.body;
   if (!fullName || !requestType || !details) {
@@ -34,6 +53,7 @@ app.post('/requests', (req, res) => {
   stmt.finalize();
 });
 
+// متابعة حالة طلب
 app.get('/requests/:id', (req, res) => {
   const id = req.params.id;
   db.get('SELECT * FROM requests WHERE id = ?', [id], (err, row) => {
@@ -41,6 +61,30 @@ app.get('/requests/:id', (req, res) => {
     if (!row) return res.status(404).json({ error: 'لم يتم العثور على الطلب' });
     res.json(row);
   });
+});
+
+// عرض جميع الطلبات (محمي بتسجيل الدخول)
+app.get('/admin/requests', (req, res) => {
+  // في نظام حقيقي: تحقق من توكن أو جلسة هنا
+  db.all('SELECT * FROM requests ORDER BY id DESC', (err, rows) => {
+    if (err) return res.status(500).json({ error: err.message });
+    res.json(rows);
+  });
+});
+
+// تحديث حالة طلب (مثلاً من قيد الانتظار إلى منجز)
+app.put('/admin/requests/:id', (req, res) => {
+  const id = req.params.id;
+  const { status } = req.body;
+  if (!status) return res.status(400).json({ error: 'حالة الطلب مطلوبة' });
+
+  const stmt = db.prepare('UPDATE requests SET status = ? WHERE id = ?');
+  stmt.run(status, id, function(err) {
+    if (err) return res.status(500).json({ error: err.message });
+    if (this.changes === 0) return res.status(404).json({ error: 'لم يتم العثور على الطلب' });
+    res.json({ success: true });
+  });
+  stmt.finalize();
 });
 
 app.listen(port, () => {
