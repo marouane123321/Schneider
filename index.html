@@ -1,179 +1,112 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="ar">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>نظام البلدية الإلكترونية المتقدم</title>
-<style>
-  body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background: #f4f7fa;
-    padding: 30px;
-    direction: rtl;
-  }
-  .container {
-    max-width: 500px;
-    margin: auto;
-    background: white;
-    padding: 25px 30px;
-    border-radius: 10px;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-  }
-  h2 {
-    color: #2c3e50;
-    margin-bottom: 25px;
-    text-align: center;
-  }
-  label {
-    display: block;
-    margin-bottom: 8px;
-    font-weight: 600;
-    color: #34495e;
-  }
-  input, select, textarea, button {
-    width: 100%;
-    padding: 10px 12px;
-    margin-bottom: 20px;
-    border-radius: 6px;
-    border: 1.5px solid #bdc3c7;
-    font-size: 1rem;
-  }
-  input:focus, select:focus, textarea:focus {
-    border-color: #2980b9;
-    outline: none;
-    box-shadow: 0 0 7px #2980b9aa;
-  }
-  button {
-    background: #3498db;
-    color: white;
-    border: none;
-    font-weight: 700;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-  }
-  button:hover {
-    background: #217dbb;
-  }
-  .status {
-    margin-top: 20px;
-    padding: 15px;
-    background: #ecf0f1;
-    border-radius: 8px;
-    font-weight: 600;
-    color: #2c3e50;
-  }
-</style>
+  <meta charset="UTF-8" />
+  <title>تقديم طلب بلدي</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 500px;
+      margin: 40px auto;
+      direction: rtl;
+      text-align: right;
+    }
+    label, select, input, textarea, button {
+      display: block;
+      width: 100%;
+      margin-bottom: 15px;
+      font-size: 16px;
+      padding: 8px;
+      box-sizing: border-box;
+    }
+    button {
+      background-color: #3498db;
+      color: white;
+      border: none;
+      cursor: pointer;
+      font-weight: bold;
+    }
+    button:hover {
+      background-color: #2980b9;
+    }
+    #result {
+      margin-top: 20px;
+      font-weight: bold;
+      color: green;
+    }
+  </style>
 </head>
 <body>
 
-<div class="container">
-  <h2>تقديم طلب جديد</h2>
-  <form id="submitRequestForm">
+  <h2>تقديم طلب إلى البلدية</h2>
+
+  <form id="requestForm">
     <label for="fullName">الاسم الكامل:</label>
-    <input type="text" id="fullName" required />
+    <input type="text" id="fullName" name="fullName" required />
 
     <label for="requestType">نوع الطلب:</label>
-    <select id="requestType" required>
+    <select id="requestType" name="requestType" required>
       <option value="">اختر نوع الطلب</option>
-      <option value="رخصة بناء">رخصة بناء</option>
-      <option value="طلب صيانة">طلب صيانة</option>
-      <option value="شكوى">شكوى</option>
-      <option value="طلب توصيل كهرباء">طلب توصيل كهرباء</option>
-      <option value="طلب توصيل ماء">طلب توصيل ماء</option>
-      <option value="طلب آخر">طلب آخر</option>
+      <option value="طلب شهادة ميلاد">طلب شهادة ميلاد</option>
+      <option value="طلب شهادة إقامة">طلب شهادة إقامة</option>
+      <option value="تسجيل زواج">تسجيل زواج</option>
+      <option value="تسجيل وفاة">تسجيل وفاة</option>
+      <option value="إصلاح خدمات">إصلاح خدمات</option>
+      <option value="شكاوى">شكاوى</option>
+      <option value="تجديد بطاقة التعريف">تجديد بطاقة التعريف</option>
+      <option value="تصريح بناء">تصريح بناء</option>
+      <option value="طلبات أخرى">طلبات أخرى</option>
     </select>
 
     <label for="details">تفاصيل الطلب:</label>
-    <textarea id="details" rows="4" required></textarea>
+    <textarea id="details" name="details" rows="4" required></textarea>
 
     <button type="submit">إرسال الطلب</button>
   </form>
 
-  <hr />
+  <div id="result"></div>
 
-  <h2>متابعة حالة الطلب</h2>
-  <form id="trackRequestForm">
-    <label for="trackingNumber">أدخل رقم الطلب:</label>
-    <input type="number" id="trackingNumber" required />
-    <button type="submit">متابعة</button>
-  </form>
+  <script>
+    const form = document.getElementById('requestForm');
+    const resultDiv = document.getElementById('result');
 
-  <div id="statusResult" class="status" style="display:none;"></div>
-</div>
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
 
-<script>
-  const submitForm = document.getElementById('submitRequestForm');
-  const trackForm = document.getElementById('trackRequestForm');
-  const statusDiv = document.getElementById('statusResult');
+      const data = {
+        fullName: form.fullName.value.trim(),
+        requestType: form.requestType.value,
+        details: form.details.value.trim(),
+      };
 
-  const API_URL = 'http://localhost:3000';
-
-  submitForm.addEventListener('submit', async e => {
-    e.preventDefault();
-
-    const fullName = document.getElementById('fullName').value.trim();
-    const requestType = document.getElementById('requestType').value;
-    const details = document.getElementById('details').value.trim();
-
-    if (!fullName || !requestType || !details) {
-      alert('يرجى ملء جميع الحقول.');
-      return;
-    }
-
-    try {
-      const res = await fetch(`${API_URL}/requests`, {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({ fullName, requestType, details })
-      });
-
-      const data = await res.json();
-
-      if (res.ok) {
-        alert(`تم تسجيل طلبك بنجاح! رقم الطلب: ${data.id}`);
-        submitForm.reset();
-      } else {
-        alert('حدث خطأ: ' + data.error);
+      if (!data.fullName || !data.requestType || !data.details) {
+        resultDiv.style.color = 'red';
+        resultDiv.textContent = 'يرجى تعبئة جميع الحقول.';
+        return;
       }
-    } catch (err) {
-      alert('خطأ في الاتصال بالخادم');
-      console.error(err);
-    }
-  });
 
-  trackForm.addEventListener('submit', async e => {
-    e.preventDefault();
-    const id = document.getElementById('trackingNumber').value.trim();
+      try {
+        const response = await fetch('http://localhost:3000/requests', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data),
+        });
 
-    if (!id) {
-      alert('يرجى إدخال رقم الطلب.');
-      return;
-    }
+        if (!response.ok) {
+          throw new Error('فشل في إرسال الطلب');
+        }
 
-    try {
-      const res = await fetch(`${API_URL}/requests/${id}`);
-      const data = await res.json();
+        const resData = await response.json();
+        resultDiv.style.color = 'green';
+        resultDiv.textContent = `تم إرسال الطلب بنجاح. رقم الطلب الخاص بك: ${resData.id}`;
 
-      statusDiv.style.display = 'block';
-
-      if (res.ok) {
-        statusDiv.innerHTML = `
-          <strong>رقم الطلب:</strong> ${data.id} <br />
-          <strong>الاسم:</strong> ${data.fullName} <br />
-          <strong>نوع الطلب:</strong> ${data.requestType} <br />
-          <strong>الحالة:</strong> ${data.status} <br />
-          <strong>التفاصيل:</strong> ${data.details}
-        `;
-      } else {
-        statusDiv.textContent = data.error || 'حدث خطأ';
+        form.reset();
+      } catch (err) {
+        resultDiv.style.color = 'red';
+        resultDiv.textContent = err.message || 'حدث خطأ ما.';
       }
-    } catch (err) {
-      statusDiv.style.display = 'block';
-      statusDiv.textContent = 'خطأ في الاتصال بالخادم';
-      console.error(err);
-    }
-  });
-</script>
+    });
+  </script>
 
 </body>
 </html>
