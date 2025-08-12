@@ -1,85 +1,179 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>عرض مشروع — قالب شبيه itch.io</title>
-  <style>
-    /* نفس التنسيقات السابقة */
-  </style>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>نظام البلدية الإلكترونية المتقدم</title>
+<style>
+  body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: #f4f7fa;
+    padding: 30px;
+    direction: rtl;
+  }
+  .container {
+    max-width: 500px;
+    margin: auto;
+    background: white;
+    padding: 25px 30px;
+    border-radius: 10px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+  }
+  h2 {
+    color: #2c3e50;
+    margin-bottom: 25px;
+    text-align: center;
+  }
+  label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: #34495e;
+  }
+  input, select, textarea, button {
+    width: 100%;
+    padding: 10px 12px;
+    margin-bottom: 20px;
+    border-radius: 6px;
+    border: 1.5px solid #bdc3c7;
+    font-size: 1rem;
+  }
+  input:focus, select:focus, textarea:focus {
+    border-color: #2980b9;
+    outline: none;
+    box-shadow: 0 0 7px #2980b9aa;
+  }
+  button {
+    background: #3498db;
+    color: white;
+    border: none;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  button:hover {
+    background: #217dbb;
+  }
+  .status {
+    margin-top: 20px;
+    padding: 15px;
+    background: #ecf0f1;
+    border-radius: 8px;
+    font-weight: 600;
+    color: #2c3e50;
+  }
+</style>
 </head>
 <body>
-  <div class="container">
-    <!-- نفس الهيكل السابق -->
-    <div style="margin-top:20px" class="card">
-      <h3>رفع أو تعديل الملف/الصور</h3>
-      <input type="file" id="fileUpload" multiple>
-      <button class="btn" id="uploadBtn">رفع الملفات</button>
-    </div>
-  </div>
 
-  <div class="lightbox" id="lightbox"><img src="" alt="" id="lightboxImg"></div>
+<div class="container">
+  <h2>تقديم طلب جديد</h2>
+  <form id="submitRequestForm">
+    <label for="fullName">الاسم الكامل:</label>
+    <input type="text" id="fullName" required />
 
-  <script>
-    const config = {
-      title: 'مشروعي التجريبي',
-      description: 'لعبة تجريبية مبنية بـ Godot. لفك الضغط افتح project.rar ثم شغّل الملف داخل مجلد dist.',
-      cover: 'cover.jpg',
-      avatar: 'avatar.jpg',
-      rarLink: 'project.rar',
-      screenshots: ['shot1.jpg','shot2.jpg','shot3.jpg','shot4.jpg']
+    <label for="requestType">نوع الطلب:</label>
+    <select id="requestType" required>
+      <option value="">اختر نوع الطلب</option>
+      <option value="رخصة بناء">رخصة بناء</option>
+      <option value="طلب صيانة">طلب صيانة</option>
+      <option value="شكوى">شكوى</option>
+      <option value="طلب توصيل كهرباء">طلب توصيل كهرباء</option>
+      <option value="طلب توصيل ماء">طلب توصيل ماء</option>
+      <option value="طلب آخر">طلب آخر</option>
+    </select>
+
+    <label for="details">تفاصيل الطلب:</label>
+    <textarea id="details" rows="4" required></textarea>
+
+    <button type="submit">إرسال الطلب</button>
+  </form>
+
+  <hr />
+
+  <h2>متابعة حالة الطلب</h2>
+  <form id="trackRequestForm">
+    <label for="trackingNumber">أدخل رقم الطلب:</label>
+    <input type="number" id="trackingNumber" required />
+    <button type="submit">متابعة</button>
+  </form>
+
+  <div id="statusResult" class="status" style="display:none;"></div>
+</div>
+
+<script>
+  const submitForm = document.getElementById('submitRequestForm');
+  const trackForm = document.getElementById('trackRequestForm');
+  const statusDiv = document.getElementById('statusResult');
+
+  const API_URL = 'http://localhost:3000';
+
+  submitForm.addEventListener('submit', async e => {
+    e.preventDefault();
+
+    const fullName = document.getElementById('fullName').value.trim();
+    const requestType = document.getElementById('requestType').value;
+    const details = document.getElementById('details').value.trim();
+
+    if (!fullName || !requestType || !details) {
+      alert('يرجى ملء جميع الحقول.');
+      return;
     }
-    
-    function renderPage() {
-      document.getElementById('title').innerText = config.title
-      document.getElementById('description').innerText = config.description
-      document.querySelector('.cover').src = config.cover
-      document.querySelector('.avatar').src = config.avatar
-      document.getElementById('fileName').innerText = config.rarLink
-      document.getElementById('downloadBtn').onclick = () => downloadFile(config.rarLink)
-      document.getElementById('dl2').onclick = () => downloadFile(config.rarLink)
-      document.getElementById('visitBtn').onclick = () => window.open('#','_blank')
-      const gallery = document.getElementById('gallery')
-      gallery.innerHTML = ''
-      config.screenshots.forEach(src=>{
-        const img = document.createElement('img')
-        img.className = 'thumb'
-        img.src = src
-        img.alt = 'لقطة'
-        img.onclick = ()=> openLightbox(src)
-        gallery.appendChild(img)
-      })
-    }
 
-    function openLightbox(src){
-      document.getElementById('lightboxImg').src = src
-      document.getElementById('lightbox').style.display='flex'
-    }
-    document.getElementById('lightbox').onclick = ()=> document.getElementById('lightbox').style.display='none'
+    try {
+      const res = await fetch(`${API_URL}/requests`, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ fullName, requestType, details })
+      });
 
-    function downloadFile(url) {
-      const a = document.createElement('a')
-      a.href = url
-      a.download = url.split('/').pop()
-      a.click()
-    }
+      const data = await res.json();
 
-    document.getElementById('uploadBtn').onclick = () => {
-      const files = document.getElementById('fileUpload').files
-      if (!files.length) return alert('اختر ملفًا أولاً')
-      for (let file of files) {
-        const url = URL.createObjectURL(file)
-        if (file.name.endsWith('.rar')) {
-          config.rarLink = url
-          document.getElementById('fileName').innerText = file.name
-        } else if (file.type.startsWith('image/')) {
-          config.screenshots.push(url)
-        }
+      if (res.ok) {
+        alert(`تم تسجيل طلبك بنجاح! رقم الطلب: ${data.id}`);
+        submitForm.reset();
+      } else {
+        alert('حدث خطأ: ' + data.error);
       }
-      renderPage()
+    } catch (err) {
+      alert('خطأ في الاتصال بالخادم');
+      console.error(err);
+    }
+  });
+
+  trackForm.addEventListener('submit', async e => {
+    e.preventDefault();
+    const id = document.getElementById('trackingNumber').value.trim();
+
+    if (!id) {
+      alert('يرجى إدخال رقم الطلب.');
+      return;
     }
 
-    renderPage()
-  </script>
+    try {
+      const res = await fetch(`${API_URL}/requests/${id}`);
+      const data = await res.json();
+
+      statusDiv.style.display = 'block';
+
+      if (res.ok) {
+        statusDiv.innerHTML = `
+          <strong>رقم الطلب:</strong> ${data.id} <br />
+          <strong>الاسم:</strong> ${data.fullName} <br />
+          <strong>نوع الطلب:</strong> ${data.requestType} <br />
+          <strong>الحالة:</strong> ${data.status} <br />
+          <strong>التفاصيل:</strong> ${data.details}
+        `;
+      } else {
+        statusDiv.textContent = data.error || 'حدث خطأ';
+      }
+    } catch (err) {
+      statusDiv.style.display = 'block';
+      statusDiv.textContent = 'خطأ في الاتصال بالخادم';
+      console.error(err);
+    }
+  });
+</script>
+
 </body>
 </html>
