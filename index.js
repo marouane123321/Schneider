@@ -7,11 +7,15 @@ const PORT = process.env.PORT || 3000;
 app.use(cors());
 app.use(express.json());
 
-// قاعدة بيانات مؤقتة (في الذاكرة فقط)
+// نقطة اختبار السيرفر - GET /
+app.get('/', (req, res) => {
+  res.send('Server is running...');
+});
+
+// استقبال الطلبات - POST /requests
 let requests = [];
 let idCounter = 1;
 
-// نقطة استقبال الطلبات
 app.post('/requests', (req, res) => {
   const { fullName, requestType, details } = req.body;
 
@@ -30,11 +34,6 @@ app.post('/requests', (req, res) => {
   requests.push(newRequest);
 
   res.json({ id: newRequest.id, message: 'تم تسجيل الطلب بنجاح' });
-});
-
-// اختبار السيرفر شغال
-app.get('/', (req, res) => {
-  res.send('Server is running...');
 });
 
 app.listen(PORT, () => {
