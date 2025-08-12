@@ -2,22 +2,37 @@
 <html lang="ar">
 <head>
   <meta charset="UTF-8" />
-  <title>تقديم طلب بلدي</title>
+  <title>تقديم طلب بلدي - متقدم</title>
   <style>
     body {
       font-family: Arial, sans-serif;
-      max-width: 500px;
+      max-width: 600px;
       margin: 40px auto;
       direction: rtl;
       text-align: right;
+      background: #f7f9fc;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 0 15px rgba(0,0,0,0.1);
     }
     label, select, input, textarea, button {
       display: block;
       width: 100%;
-      margin-bottom: 15px;
+      margin-bottom: 10px;
       font-size: 16px;
-      padding: 8px;
+      padding: 10px;
       box-sizing: border-box;
+      border-radius: 5px;
+      border: 1.5px solid #ccc;
+      transition: border-color 0.3s ease;
+    }
+    label {
+      font-weight: bold;
+      margin-top: 15px;
+    }
+    input:focus, select:focus, textarea:focus {
+      border-color: #3498db;
+      outline: none;
     }
     button {
       background-color: #3498db;
@@ -25,14 +40,49 @@
       border: none;
       cursor: pointer;
       font-weight: bold;
+      transition: background-color 0.3s ease;
     }
-    button:hover {
+    button:disabled {
+      background-color: #8fbce6;
+      cursor: not-allowed;
+    }
+    button:hover:not(:disabled) {
       background-color: #2980b9;
     }
     #result {
       margin-top: 20px;
       font-weight: bold;
-      color: green;
+      min-height: 24px;
+      padding: 8px;
+      border-radius: 5px;
+    }
+    #result.error {
+      background-color: #fdd;
+      color: #d00;
+      border: 1px solid #d00;
+    }
+    #result.success {
+      background-color: #dfd;
+      color: #060;
+      border: 1px solid #060;
+    }
+    .loading-spinner {
+      border: 4px solid #f3f3f3; /* Light grey */
+      border-top: 4px solid #3498db; /* Blue */
+      border-radius: 50%;
+      width: 20px;
+      height: 20px;
+      animation: spin 1s linear infinite;
+      display: inline-block;
+      vertical-align: middle;
+      margin-left: 10px;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg);}
+      100% { transform: rotate(360deg);}
+    }
+    .hidden {
+      display: none;
     }
   </style>
 </head>
@@ -40,9 +90,9 @@
 
   <h2>تقديم طلب إلى البلدية</h2>
 
-  <form id="requestForm">
+  <form id="requestForm" novalidate>
     <label for="fullName">الاسم الكامل:</label>
-    <input type="text" id="fullName" name="fullName" required />
+    <input type="text" id="fullName" name="fullName" required placeholder="اكتب اسمك الكامل" />
 
     <label for="requestType">نوع الطلب:</label>
     <select id="requestType" name="requestType" required>
@@ -58,52 +108,121 @@
       <option value="طلبات أخرى">طلبات أخرى</option>
     </select>
 
-    <label for="details">تفاصيل الطلب:</label>
-    <textarea id="details" name="details" rows="4" required></textarea>
+    <!-- حقل نصي إضافي يظهر فقط عند اختيار "طلبات أخرى" -->
+    <label for="otherRequestDetails" class="hidden" id="otherLabel">يرجى توضيح نوع الطلب:</label>
+    <input type="text" id="otherRequestDetails" name="otherRequestDetails" placeholder="صف نوع الطلب بالتفصيل" class="hidden" />
 
-    <button type="submit">إرسال الطلب</button>
+    <label for="details">تفاصيل الطلب:</label>
+    <textarea id="details" name="details" rows="5" required placeholder="اشرح تفاصيل طلبك"></textarea>
+
+    <button type="submit" id="submitBtn">إرسال الطلب</button>
+    <span id="loadingSpinner" class="loading-spinner hidden" aria-hidden="true"></span>
   </form>
 
-  <div id="result"></div>
+  <div id="result" role="alert" aria-live="polite"></div>
 
   <script>
     const form = document.getElementById('requestForm');
     const resultDiv = document.getElementById('result');
+    const submitBtn = document.getElementById('submitBtn');
+    const loadingSpinner = document.getElementById('loadingSpinner');
+
+    const requestTypeSelect = document.getElementById('requestType');
+    const otherRequestInput = document.getElementById('otherRequestDetails');
+    const otherLabel = document.getElementById('otherLabel');
+
+    // إظهار أو إخفاء حقل التوضيح عند اختيار "طلبات أخرى"
+    requestTypeSelect.addEventListener('change', () => {
+      if (requestTypeSelect.value === 'طلبات أخرى') {
+        otherRequestInput.classList.remove('hidden');
+        otherLabel.classList.remove('hidden');
+        otherRequestInput.required = true;
+      } else {
+        otherRequestInput.classList.add('hidden');
+        otherLabel.classList.add('hidden');
+        otherRequestInput.required = false;
+        otherRequestInput.value = '';
+      }
+    });
+
+    // وظيفة لعرض رسالة مع نوع (success / error)
+    function showMessage(message, type) {
+      resultDiv.textContent = message;
+      if (type === 'success') {
+        resultDiv.classList.remove('error');
+        resultDiv.classList.add('success');
+      } else if (type === 'error') {
+        resultDiv.classList.remove('success');
+        resultDiv.classList.add('error');
+      } else {
+        resultDiv.classList.remove('success', 'error');
+      }
+    }
+
+    // تحقق شامل قبل الإرسال
+    function validateForm(data) {
+      if (!data.fullName) return 'يرجى إدخال الاسم الكامل.';
+      if (!data.requestType) return 'يرجى اختيار نوع الطلب.';
+      if (data.requestType === 'طلبات أخرى' && !data.otherRequestDetails) return 'يرجى توضيح نوع الطلب.';
+      if (!data.details) return 'يرجى إدخال تفاصيل الطلب.';
+      return null;
+    }
 
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
+      showMessage('', ''); // إخفاء الرسائل السابقة
 
+      // جمع البيانات
       const data = {
         fullName: form.fullName.value.trim(),
         requestType: form.requestType.value,
+        otherRequestDetails: form.otherRequestDetails ? form.otherRequestDetails.value.trim() : '',
         details: form.details.value.trim(),
       };
 
-      if (!data.fullName || !data.requestType || !data.details) {
-        resultDiv.style.color = 'red';
-        resultDiv.textContent = 'يرجى تعبئة جميع الحقول.';
+      // في حالة اختيار "طلبات أخرى" نعتمد الحقل التفصيلي كنوع الطلب النهائي
+      if (data.requestType === 'طلبات أخرى') {
+        data.requestType = data.otherRequestDetails;
+      }
+
+      // تحقق من صحة البيانات
+      const error = validateForm(data);
+      if (error) {
+        showMessage(error, 'error');
         return;
       }
+
+      // تعطيل الزر واظهار التحميل
+      submitBtn.disabled = true;
+      loadingSpinner.classList.remove('hidden');
 
       try {
         const response = await fetch('http://localhost:3000/requests', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(data),
+          body: JSON.stringify({
+            fullName: data.fullName,
+            requestType: data.requestType,
+            details: data.details,
+          }),
         });
 
         if (!response.ok) {
-          throw new Error('فشل في إرسال الطلب');
+          throw new Error('فشل في إرسال الطلب. حاول مرة أخرى.');
         }
 
         const resData = await response.json();
-        resultDiv.style.color = 'green';
-        resultDiv.textContent = `تم إرسال الطلب بنجاح. رقم الطلب الخاص بك: ${resData.id}`;
+        showMessage(`تم إرسال الطلب بنجاح. رقم الطلب الخاص بك: ${resData.id}`, 'success');
 
         form.reset();
+        otherRequestInput.classList.add('hidden');
+        otherLabel.classList.add('hidden');
+        otherRequestInput.required = false;
       } catch (err) {
-        resultDiv.style.color = 'red';
-        resultDiv.textContent = err.message || 'حدث خطأ ما.';
+        showMessage(err.message || 'حدث خطأ غير متوقع.', 'error');
+      } finally {
+        submitBtn.disabled = false;
+        loadingSpinner.classList.add('hidden');
       }
     });
   </script>
