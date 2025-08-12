@@ -1,37 +1,48 @@
-import express from "express";
-import cors from "cors";
-import fetch from "node-fetch";
-import dotenv from "dotenv";
-
-dotenv.config();
-
+const express = require('express');
+const sqlite3 = require('sqlite3').verbose();
+const bodyParser = require('body-parser');
+const cors = require('cors');
 const app = express();
+const port = 3000;
+
 app.use(cors());
-app.use(express.json());
+app.use(bodyParser.json());
 
-const API_TOKEN = process.env.HUGGINGFACE_API_TOKEN;
-const MODEL = "gpt2";
-
-app.post("/chat", async (req, res) => {
-  const { prompt } = req.body;
-  if (!prompt) return res.status(400).json({ error: "الرجاء إرسال نص" });
-
-  try {
-    const response = await fetch(`https://api-inference.huggingface.co/models/${MODEL}`, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${API_TOKEN}`,
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({ inputs: prompt })
-    });
-
-    const data = await response.json();
-    res.json(data);
-  } catch (error) {
-    res.status(500).json({ error: "حدث خطأ في الخادم" });
-  }
+const db = new sqlite3.Database('./requests.db', (err) => {
+  if (err) console.error(err.message);
+  else console.log('Connected to SQLite database.');
 });
 
-const port = process.env.PORT || 3000;
-app.listen(port, () => console.log(`السيرفر يعمل على http://localhost:${port}`));
+db.run(`CREATE TABLE IF NOT EXISTS requests (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  fullName TEXT NOT NULL,
+  requestType TEXT NOT NULL,
+  details TEXT NOT NULL,
+  status TEXT NOT NULL DEFAULT 'قيد الانتظار'
+)`);
+
+app.post('/requests', (req, res) => {
+  const { fullName, requestType, details } = req.body;
+  if (!fullName || !requestType || !details) {
+    return res.status(400).json({ error: 'جميع الحقول مطلوبة' });
+  }
+  const stmt = db.prepare('INSERT INTO requests (fullName, requestType, details) VALUES (?, ?, ?)');
+  stmt.run(fullName, requestType, details, function(err) {
+    if (err) return res.status(500).json({ error: err.message });
+    res.json({ id: this.lastID });
+  });
+  stmt.finalize();
+});
+
+app.get('/requests/:id', (req, res) => {
+  const id = req.params.id;
+  db.get('SELECT * FROM requests WHERE id = ?', [id], (err, row) => {
+    if (err) return res.status(500).json({ error: err.message });
+    if (!row) return res.status(404).json({ error: 'لم يتم العثور على الطلب' });
+    res.json(row);
+  });
+});
+
+app.listen(port, () => {
+  console.log(`Server running on http://localhost:${port}`);
+});
