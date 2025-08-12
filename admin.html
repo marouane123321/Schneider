@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>لوحة تحكم الموظفين - إدارة الطلبات</title>
+<style>
+  body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: #f4f7fa;
+    padding: 20px;
+    direction: rtl;
+  }
+  .container {
+    max-width: 900px;
+    margin: auto;
+    background: white;
+    padding: 20px 30px;
+    border-radius: 10px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+  }
+  h2 {
+    text-align: center;
+    color: #2c3e50;
+    margin-bottom: 20px;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 15px;
+  }
+  th, td {
+    border: 1px solid #ddd;
+    padding: 12px 10px;
+    text-align: center;
+  }
+  th {
+    background: #3498db;
+    color: white;
+  }
+  select {
+    padding: 6px 8px;
+    border-radius: 6px;
+    border: 1.5px solid #bdc3c7;
+  }
+  #loginForm {
+    max-width: 300px;
+    margin: auto;
+  }
+  #loginForm input {
+    width: 100%;
+    margin-bottom: 15px;
+    padding: 10px;
+    border-radius: 6px;
+    border: 1.5px solid #bdc3c7;
+  }
+  #loginForm button {
+    width: 100%;
+    padding: 12px;
+    background: #3498db;
+    border: none;
+    color: white;
+    font-weight: 700;
+    cursor: pointer;
+    border-radius: 6px;
+  }
+  #logoutBtn {
+    background: #e74c3c;
+    margin-bottom: 15px;
+  }
+</style>
+</head>
+<body>
+
+<div class="container" id="loginSection">
+  <h2>تسجيل دخول الموظفين</h2>
+  <form id="loginForm">
+    <input type="text" id="username" placeholder="اسم المستخدم" required />
+    <input type="password" id="password" placeholder="كلمة المرور" required />
+    <button type="submit">تسجيل الدخول</button>
+  </form>
+  <div id="loginError" style="color:red; text-align:center; margin-top:10px;"></div>
+</div>
+
+<div class="container" id="adminSection" style="display:none;">
+  <button id="logoutBtn">تسجيل الخروج</button>
+  <h2>إدارة طلبات البلدية</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>رقم الطلب</th>
+        <th>الاسم الكامل</th>
+        <th>نوع الطلب</th>
+        <th>التفاصيل</th>
+        <th>الحالة</th>
+        <th>تغيير الحالة</th>
+      </tr>
+    </thead>
+    <tbody id="requestsTableBody">
+      <!-- البيانات تظهر هنا -->
+    </tbody>
+  </table>
+</div>
+
+<script>
+  const API_URL = 'http://localhost:3000';
+  const loginSection = document.getElementById('loginSection');
+  const adminSection = document.getElementById('adminSection');
+  const loginForm = document.getElementById('loginForm');
+  const loginError = document.getElementById('loginError');
+  const logoutBtn = document.getElementById('logoutBtn');
+  const requestsTableBody = document.getElementById('requestsTableBody');
+
+  // تخزين بسيط لحالة الدخول (غير آمن - فقط لأغراض تجريبية)
+  let loggedInUser = null;
+
+  loginForm.addEventListener('submit', async e => {
+    e.preventDefault();
+    const username = document.getElementById('username').value.trim();
+    const password = document.getElementById('password').value.trim();
+
+    try {
+      const res = await fetch(`${API_URL}/login`, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ username, password })
+      });
+
+      const data = await res.json();
+
+      if (res.ok && data.success) {
+        loggedInUser = data.username;
+        loginSection.style.display = 'none';
+        adminSection.style.display = 'block';
+        loginError.textContent = '';
+        loadRequests();
+      } else {
+        loginError.textContent = data.message || 'خطأ في تسجيل الدخول';
+      }
+    } catch (err) {
+      loginError.textContent = 'خطأ في الاتصال بالخادم';
+    }
+  });
+
+  logoutBtn.addEventListener('click', () => {
+    loggedInUser = null;
+    adminSection.style.display = 'none';
+    loginSection.style.display = 'block';
+    loginForm.reset();
+  });
+
+  async function loadRequests() {
+    try {
+      const res = await fetch(`${API_URL}/admin/requests`);
+      const data = await res.json();
+
+      if (!res.ok) {
+        alert('فشل في تحميل الطلبات');
+        return;
+      }
+
+      requestsTableBody.innerHTML = '';
+
+      data.forEach(req => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${req.id}</td>
+          <td>${req.fullName}</td>
+          <td>${req.requestType}</td>
+          <td>${req.details}</td>
+          <td>${req.status}</td>
+          <td>
+            <select data-id="${req.id}">
+              <option value="قيد الانتظار" ${req.status === 'قيد الانتظار' ? 'selected' : ''}>قيد الانتظار</option>
+              <option value="قيد التنفيذ" ${req.status === 'قيد التنفيذ' ? 'selected' : ''}>قيد التنفيذ</option>
+              <option value="منجز" ${req.status === 'منجز' ? 'selected' : ''}>منجز</option>
+              <option value="مرفوض" ${req.status === 'مرفوض' ? 'selected' : ''}>مرفوض</option>
+            </select>
+          </td>
+        `;
+        requestsTableBody.appendChild(tr);
+      });
+
+      // إضافة مستمع تغيير للحالة
+      document.querySelectorAll('select[data-id]').forEach(select => {
+        select.addEventListener('change', async (e) => {
+          const id = e.target.getAttribute('data-id');
+          const status = e.target.value;
+          try {
+            const res = await fetch(`${API_URL}/admin/requests/${id}`, {
+              method: 'PUT',
+              headers: {'Content-Type': 'application/json'},
+              body: JSON.stringify({ status })
+            });
+            if (!res.ok) alert('فشل في تحديث الحالة');
+            else loadRequests(); // إعادة تحميل الطلبات لتحديث العرض
+          } catch {
+            alert('خطأ في الاتصال بالخادم');
+          }
+        });
+      });
+
+    } catch (err) {
+      alert('خطأ في الاتصال بالخادم');
+    }
+  }
+</script>
+
+</body>
+</html>
